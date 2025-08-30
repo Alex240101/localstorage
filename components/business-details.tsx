@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -35,6 +35,7 @@ export function BusinessDetails({ business, onBack, onCall, onNavigate }: Busine
   const [selectedImageIndex, setSelectedImageIndex] = useState(0)
   const [newReview, setNewReview] = useState("")
   const [userRating, setUserRating] = useState(0)
+  const [isMounted, setIsMounted] = useState(false)
   const { toast } = useToast()
 
   // Mock additional data for detailed view
@@ -94,7 +95,17 @@ export function BusinessDetails({ business, onBack, onCall, onNavigate }: Busine
     ],
   }
 
+  useEffect(() => {
+    setIsMounted(true)
+    if (typeof window !== "undefined") {
+      const favorites = JSON.parse(localStorage.getItem("busca-local-favorites") || "[]")
+      setIsFavorite(favorites.some((fav: any) => fav.id === business.id))
+    }
+  }, [business.id])
+
   const handleFavorite = () => {
+    if (typeof window === "undefined") return
+
     setIsFavorite(!isFavorite)
     const favorites = JSON.parse(localStorage.getItem("busca-local-favorites") || "[]")
 
@@ -116,6 +127,8 @@ export function BusinessDetails({ business, onBack, onCall, onNavigate }: Busine
   }
 
   const handleShare = () => {
+    if (typeof window === "undefined" || typeof navigator === "undefined") return
+
     if (navigator.share) {
       navigator.share({
         title: business.name,

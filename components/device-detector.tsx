@@ -1,7 +1,6 @@
 "use client"
 
 import type React from "react"
-
 import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -17,6 +16,12 @@ export function DeviceDetector({ children }: DeviceDetectorProps) {
 
   useEffect(() => {
     const checkDevice = () => {
+      if (typeof window === "undefined" || typeof navigator === "undefined") {
+        setIsMobile(true)
+        setIsLoading(false)
+        return
+      }
+
       const userAgent = navigator.userAgent.toLowerCase()
       const isMobileDevice = /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(userAgent)
       const isSmallScreen = window.innerWidth <= 768
@@ -26,9 +31,11 @@ export function DeviceDetector({ children }: DeviceDetectorProps) {
     }
 
     checkDevice()
-    window.addEventListener("resize", checkDevice)
 
-    return () => window.removeEventListener("resize", checkDevice)
+    if (typeof window !== "undefined") {
+      window.addEventListener("resize", checkDevice)
+      return () => window.removeEventListener("resize", checkDevice)
+    }
   }, [])
 
   if (isLoading) {
@@ -61,7 +68,14 @@ export function DeviceDetector({ children }: DeviceDetectorProps) {
             <p className="text-sm text-gray-400">
               Para una mejor experiencia, por favor accede desde tu teléfono móvil o tablet
             </p>
-            <Button onClick={() => window.location.reload()} className="w-full bg-white text-black hover:bg-gray-200">
+            <Button
+              onClick={() => {
+                if (typeof window !== "undefined") {
+                  window.location.reload()
+                }
+              }}
+              className="w-full bg-white text-black hover:bg-gray-200"
+            >
               Verificar nuevamente
             </Button>
           </CardContent>

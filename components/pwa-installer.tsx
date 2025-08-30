@@ -12,64 +12,66 @@ export default function PWAInstaller() {
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null)
   const [showInstallPrompt, setShowInstallPrompt] = useState(false)
   const [isInstalled, setIsInstalled] = useState(false)
+  const [isMounted, setIsMounted] = useState(false)
+  const [isDismissed, setIsDismissed] = useState(false)
 
   useEffect(() => {
-    if ("serviceWorker" in navigator) {
-      navigator.serviceWorker
-        .register("/sw")
-        .then((registration) => {
-          console.log("[PWA] Service Worker registered:", registration)
+    setIsMounted(true)
 
-          // Verificar actualizaciones del Service Worker
-          registration.addEventListener("updatefound", () => {
-            const newWorker = registration.installing
-            if (newWorker) {
-              newWorker.addEventListener("statechange", () => {
-                if (newWorker.state === "installed" && navigator.serviceWorker.controller) {
-                  // Nueva versión disponible
-                  console.log("[PWA] New version available")
-                }
-              })
-            }
+    if (typeof window !== "undefined") {
+      setIsDismissed(!!sessionStorage.getItem("pwa-install-dismissed"))
+
+      if ("serviceWorker" in navigator) {
+        navigator.serviceWorker
+          .register("/sw")
+          .then((registration) => {
+            console.log("[PWA] Service Worker registered:", registration)
+
+            registration.addEventListener("updatefound", () => {
+              const newWorker = registration.installing
+              if (newWorker) {
+                newWorker.addEventListener("statechange", () => {
+                  if (newWorker.state === "installed" && navigator.serviceWorker.controller) {
+                    console.log("[PWA] New version available")
+                  }
+                })
+              }
+            })
           })
-        })
-        .catch((error) => {
-          console.error("[PWA] Service Worker registration failed:", error)
-        })
-    }
+          .catch((error) => {
+            console.error("[PWA] Service Worker registration failed:", error)
+          })
+      }
 
-    // Detectar si ya está instalado
-    if (window.matchMedia("(display-mode: standalone)").matches) {
-      setIsInstalled(true)
-    }
+      if (window.matchMedia("(display-mode: standalone)").matches) {
+        setIsInstalled(true)
+      }
 
-    // Escuchar evento de instalación
-    const handleBeforeInstallPrompt = (e: Event) => {
-      e.preventDefault()
-      setDeferredPrompt(e as BeforeInstallPromptEvent)
+      const handleBeforeInstallPrompt = (e: Event) => {
+        e.preventDefault()
+        setDeferredPrompt(e as BeforeInstallPromptEvent)
 
-      // Mostrar prompt después de un delay (mejor UX)
-      setTimeout(() => {
-        if (!isInstalled) {
-          setShowInstallPrompt(true)
-        }
-      }, 3000)
-    }
+        setTimeout(() => {
+          if (!isInstalled) {
+            setShowInstallPrompt(true)
+          }
+        }, 3000)
+      }
 
-    // Detectar cuando se instala
-    const handleAppInstalled = () => {
-      console.log("[PWA] App installed")
-      setIsInstalled(true)
-      setShowInstallPrompt(false)
-      setDeferredPrompt(null)
-    }
+      const handleAppInstalled = () => {
+        console.log("[PWA] App installed")
+        setIsInstalled(true)
+        setShowInstallPrompt(false)
+        setDeferredPrompt(null)
+      }
 
-    window.addEventListener("beforeinstallprompt", handleBeforeInstallPrompt)
-    window.addEventListener("appinstalled", handleAppInstalled)
+      window.addEventListener("beforeinstallprompt", handleBeforeInstallPrompt)
+      window.addEventListener("appinstalled", handleAppInstalled)
 
-    return () => {
-      window.removeEventListener("beforeinstallprompt", handleBeforeInstallPrompt)
-      window.removeEventListener("appinstalled", handleAppInstalled)
+      return () => {
+        window.removeEventListener("beforeinstallprompt", handleBeforeInstallPrompt)
+        window.removeEventListener("appinstalled", handleAppInstalled)
+      }
     }
   }, [isInstalled])
 
@@ -95,12 +97,17 @@ export default function PWAInstaller() {
 
   const handleDismiss = () => {
     setShowInstallPrompt(false)
-    // No mostrar de nuevo en esta sesión
-    sessionStorage.setItem("pwa-install-dismissed", "true")
+    setIsDismissed(true)
+    if (typeof window !== "undefined") {
+      sessionStorage.setItem("pwa-install-dismissed", "true")
+    }
   }
 
-  // No mostrar si ya está instalado o fue rechazado en esta sesión
-  if (isInstalled || sessionStorage.getItem("pwa-install-dismissed")) {
+  if (!isMounted) {
+    return null
+  }
+
+  if (isInstalled || isDismissed) {
     return null
   }
 

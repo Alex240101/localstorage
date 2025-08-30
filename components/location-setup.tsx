@@ -22,78 +22,79 @@ export function LocationSetup({ onLocationSet }: LocationSetupProps) {
 
   const handleGetLocation = () => {
     setIsDetectingLocation(true)
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        async (position) => {
-          setGeoLocation(position)
-          setLocationDetected(true)
 
-          console.log("[v0] GPS Activado - Coordenadas obtenidas:")
-          console.log("[v0] Latitud:", position.coords.latitude)
-          console.log("[v0] Longitud:", position.coords.longitude)
-          console.log("[v0] Precisión:", position.coords.accuracy, "metros")
-
-          const locationData = {
-            coordinates: {
-              latitude: position.coords.latitude,
-              longitude: position.coords.longitude,
-              accuracy: position.coords.accuracy,
-            },
-            address: `Ubicación GPS detectada automáticamente`,
-            timestamp: new Date().toISOString(),
-            hasGPS: true,
-          }
-
-          toast({
-            title: "Ubicación detectada",
-            description: "GPS activado correctamente",
-          })
-
-          setTimeout(() => {
-            onLocationSet(locationData)
-          }, 1000)
-
-          setIsDetectingLocation(false)
-        },
-        (error) => {
-          setIsDetectingLocation(false)
-          console.log("[v0] Error de GPS:", error.message)
-
-          let errorMessage = "No se pudo obtener tu ubicación."
-
-          switch (error.code) {
-            case error.PERMISSION_DENIED:
-              errorMessage =
-                "Permiso de ubicación denegado. Por favor, permite el acceso a la ubicación en tu navegador."
-              break
-            case error.POSITION_UNAVAILABLE:
-              errorMessage = "Información de ubicación no disponible."
-              break
-            case error.TIMEOUT:
-              errorMessage = "Tiempo de espera agotado para obtener la ubicación."
-              break
-          }
-
-          toast({
-            title: "Error de ubicación",
-            description: errorMessage,
-            variant: "destructive",
-          })
-        },
-        {
-          enableHighAccuracy: true,
-          timeout: 15000,
-          maximumAge: 30000,
-        },
-      )
-    } else {
+    if (typeof navigator === "undefined" || !navigator.geolocation) {
       setIsDetectingLocation(false)
       toast({
         title: "Geolocalización no disponible",
         description: "Tu navegador no soporta geolocalización",
         variant: "destructive",
       })
+      return
     }
+
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        setGeoLocation(position)
+        setLocationDetected(true)
+
+        console.log("[v0] GPS Activado - Coordenadas obtenidas:")
+        console.log("[v0] Latitud:", position.coords.latitude)
+        console.log("[v0] Longitud:", position.coords.longitude)
+        console.log("[v0] Precisión:", position.coords.accuracy, "metros")
+
+        const locationData = {
+          coordinates: {
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude,
+            accuracy: position.coords.accuracy,
+          },
+          address: `Ubicación GPS detectada automáticamente`,
+          timestamp: new Date().toISOString(),
+          hasGPS: true,
+        }
+
+        toast({
+          title: "Ubicación detectada",
+          description: "GPS activado correctamente",
+        })
+
+        setTimeout(() => {
+          onLocationSet(locationData)
+        }, 1000)
+
+        setIsDetectingLocation(false)
+      },
+      (error) => {
+        setIsDetectingLocation(false)
+        console.log("[v0] Error de GPS:", error.message)
+
+        let errorMessage = "No se pudo obtener tu ubicación."
+
+        switch (error.code) {
+          case error.PERMISSION_DENIED:
+            errorMessage = "Permiso de ubicación denegado. Por favor, permite el acceso a la ubicación en tu navegador."
+            break
+          case error.POSITION_UNAVAILABLE:
+            errorMessage = "Información de ubicación no disponible."
+            break
+          case error.TIMEOUT:
+            errorMessage = "Tiempo de espera agotado para obtener la ubicación."
+            break
+        }
+
+        toast({
+          title: "Error de ubicación",
+          description: errorMessage,
+          variant: "destructive",
+        })
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 15000,
+        maximumAge: 30000,
+      },
+    )
   }
 
   return (

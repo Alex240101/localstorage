@@ -11,19 +11,26 @@ type AppState = "loading" | "login" | "location-setup" | "dashboard"
 
 export default function Home() {
   const [appState, setAppState] = useState<AppState>("loading")
+  const [isMounted, setIsMounted] = useState(false)
 
   useEffect(() => {
+    setIsMounted(true)
+
     // Simulate loading time
     const timer = setTimeout(() => {
-      // Check if user is logged in
-      const user = localStorage.getItem("busca-local-user")
-      if (user) {
-        // Check if location is configured
-        const location = localStorage.getItem("busca-local-location")
-        if (location) {
-          setAppState("dashboard")
+      if (typeof window !== "undefined") {
+        // Check if user is logged in
+        const user = localStorage.getItem("busca-local-user")
+        if (user) {
+          // Check if location is configured
+          const location = localStorage.getItem("busca-local-location")
+          if (location) {
+            setAppState("dashboard")
+          } else {
+            setAppState("location-setup")
+          }
         } else {
-          setAppState("location-setup")
+          setAppState("login")
         }
       } else {
         setAppState("login")
@@ -34,19 +41,29 @@ export default function Home() {
   }, [])
 
   const handleLogin = (userData: any) => {
-    localStorage.setItem("busca-local-user", JSON.stringify(userData))
+    if (typeof window !== "undefined") {
+      localStorage.setItem("busca-local-user", JSON.stringify(userData))
+    }
     setAppState("location-setup")
   }
 
   const handleLocationSetup = (locationData: any) => {
-    localStorage.setItem("busca-local-location", JSON.stringify(locationData))
+    if (typeof window !== "undefined") {
+      localStorage.setItem("busca-local-location", JSON.stringify(locationData))
+    }
     setAppState("dashboard")
   }
 
   const handleLogout = () => {
-    localStorage.removeItem("busca-local-user")
-    localStorage.removeItem("busca-local-location")
+    if (typeof window !== "undefined") {
+      localStorage.removeItem("busca-local-user")
+      localStorage.removeItem("busca-local-location")
+    }
     setAppState("login")
+  }
+
+  if (!isMounted) {
+    return <LoadingScreen />
   }
 
   return (

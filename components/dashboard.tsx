@@ -39,8 +39,10 @@ export function Dashboard({ onLogout }: DashboardProps) {
   const [showDirections, setShowDirections] = useState<any>(null)
   const [currentSection, setCurrentSection] = useState("home")
   const { toast } = useToast()
+  const [isMounted, setIsMounted] = useState(false)
 
   useEffect(() => {
+    setIsMounted(true)
     window.scrollTo({ top: 0, behavior: "smooth" })
   }, [currentSection])
 
@@ -501,8 +503,10 @@ export function Dashboard({ onLogout }: DashboardProps) {
     }
   }
 
-  const userData = JSON.parse(localStorage.getItem("busca-local-user") || "{}")
-  const locationData = JSON.parse(localStorage.getItem("busca-local-location") || "{}")
+  const userData =
+    isMounted && typeof window !== "undefined" ? JSON.parse(localStorage.getItem("busca-local-user") || "{}") : {}
+  const locationData =
+    isMounted && typeof window !== "undefined" ? JSON.parse(localStorage.getItem("busca-local-location") || "{}") : {}
 
   const renderCurrentSection = () => {
     switch (currentSection) {
@@ -571,15 +575,15 @@ export function Dashboard({ onLogout }: DashboardProps) {
 
               <div className="grid grid-cols-3 gap-3 sm:gap-4 pt-2">
                 <div className="text-center p-3 bg-muted/30 rounded-lg">
-                  <div className="text-lg sm:text-xl font-bold text-primary">0</div>
+                  <div className="text-lg sm:text-xl md:text-2xl font-bold text-primary">0</div>
                   <div className="text-xs sm:text-sm text-muted-foreground">Búsquedas</div>
                 </div>
                 <div className="text-center p-3 bg-muted/30 rounded-lg">
-                  <div className="text-lg sm:text-xl font-bold text-primary">0</div>
+                  <div className="text-lg sm:text-xl md:text-2xl font-bold text-primary">0</div>
                   <div className="text-xs sm:text-sm text-muted-foreground">Favoritos</div>
                 </div>
                 <div className="text-center p-3 bg-muted/30 rounded-lg">
-                  <div className="text-lg sm:text-xl font-bold text-primary">0</div>
+                  <div className="text-lg sm:text-xl md:text-2xl font-bold text-primary">0</div>
                   <div className="text-xs sm:text-sm text-muted-foreground">Reseñas</div>
                 </div>
               </div>
@@ -732,6 +736,14 @@ export function Dashboard({ onLogout }: DashboardProps) {
           </div>
         )
     }
+  }
+
+  if (!isMounted) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="animate-pulse text-foreground">Cargando...</div>
+      </div>
+    )
   }
 
   return (

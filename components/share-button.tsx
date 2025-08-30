@@ -13,40 +13,44 @@ interface ShareButtonProps {
 export default function ShareButton({
   title = "BuscaLocal - Encuentra Negocios Cerca de Ti",
   text = "Descubre los mejores restaurantes y negocios cerca de tu ubicación",
-  url = window.location.href,
+  url,
   businessName,
 }: ShareButtonProps) {
   const [copied, setCopied] = useState(false)
 
   const handleShare = async () => {
+    const currentUrl = url || (typeof window !== "undefined" ? window.location.href : "")
+
     const shareData = {
       title: businessName ? `${businessName} - BuscaLocal` : title,
       text: businessName ? `Encontré ${businessName} en BuscaLocal` : text,
-      url: url,
+      url: currentUrl,
     }
 
     try {
-      // Usar Web Share API si está disponible
-      if (navigator.share && navigator.canShare && navigator.canShare(shareData)) {
+      if (typeof navigator !== "undefined" && navigator.share && navigator.canShare && navigator.canShare(shareData)) {
         await navigator.share(shareData)
         console.log("[PWA] Content shared successfully")
         return
       }
 
       // Fallback: copiar al portapapeles
-      await navigator.clipboard.writeText(url)
-      setCopied(true)
-
-      setTimeout(() => setCopied(false), 2000)
-      console.log("[PWA] URL copied to clipboard")
+      if (typeof navigator !== "undefined" && navigator.clipboard) {
+        await navigator.clipboard.writeText(currentUrl)
+        setCopied(true)
+        setTimeout(() => setCopied(false), 2000)
+        console.log("[PWA] URL copied to clipboard")
+      }
     } catch (error) {
       console.error("[PWA] Error sharing:", error)
 
       // Fallback manual para copiar
       try {
-        await navigator.clipboard.writeText(url)
-        setCopied(true)
-        setTimeout(() => setCopied(false), 2000)
+        if (typeof navigator !== "undefined" && navigator.clipboard) {
+          await navigator.clipboard.writeText(currentUrl)
+          setCopied(true)
+          setTimeout(() => setCopied(false), 2000)
+        }
       } catch (clipboardError) {
         console.error("[PWA] Clipboard error:", clipboardError)
       }
