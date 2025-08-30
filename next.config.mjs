@@ -51,6 +51,10 @@ const nextConfig = {
             key: 'Service-Worker-Allowed',
             value: '/',
           },
+          {
+            key: 'Content-Type',
+            value: 'application/javascript; charset=utf-8',
+          },
         ],
       },
       {

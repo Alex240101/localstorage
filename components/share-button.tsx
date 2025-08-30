@@ -11,13 +11,15 @@ interface ShareButtonProps {
   url?: string
   businessName?: string
   className?: string
+  business?: any
 }
 
-export default function ShareButton({
+export function ShareButton({
   title = "BuscaLocal - Encuentra Negocios Cerca de Ti",
   text = "Descubre los mejores restaurantes y negocios cerca de tu ubicación",
   url,
   businessName,
+  business,
   className = "flex items-center gap-2 px-3 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors text-sm",
 }: ShareButtonProps) {
   const [copied, setCopied] = useState(false)
@@ -26,10 +28,11 @@ export default function ShareButton({
     event.stopPropagation()
 
     const currentUrl = url || (typeof window !== "undefined" ? window.location.href : "")
+    const name = businessName || business?.name
 
     const shareData = {
-      title: businessName ? `${businessName} - BuscaLocal` : title,
-      text: businessName ? `Encontré ${businessName} en BuscaLocal` : text,
+      title: name ? `${name} - BuscaLocal` : title,
+      text: name ? `Encontré ${name} en BuscaLocal` : text,
       url: currentUrl,
     }
 
@@ -64,11 +67,7 @@ export default function ShareButton({
   }
 
   return (
-    <button
-      onClick={handleShare}
-      className={className}
-      title={businessName ? `Compartir ${businessName}` : "Compartir BuscaLocal"}
-    >
+    <button onClick={handleShare} className={className} title={name ? `Compartir ${name}` : "Compartir BuscaLocal"}>
       {copied ? (
         <>
           <Check className="w-4 h-4" />
@@ -83,3 +82,5 @@ export default function ShareButton({
     </button>
   )
 }
+
+export default ShareButton

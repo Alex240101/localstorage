@@ -17,6 +17,7 @@ import { DirectionsMap } from "./directions-map"
 import { NativeNavigation } from "./native-navigation"
 import { TrendingSection } from "./trending-section"
 import { FeedbackSection } from "./feedback-section"
+import { FavoritesPage } from "./favorites-page"
 import { useToast } from "@/hooks/use-toast"
 import { businessSearchService } from "@/lib/api-services"
 
@@ -514,6 +515,8 @@ export function Dashboard({ onLogout }: DashboardProps) {
         return <TrendingSection onBusinessClick={setSelectedBusiness} />
       case "feedback":
         return <FeedbackSection />
+      case "favorites":
+        return <FavoritesPage onBusinessClick={setSelectedBusiness} />
       case "profile":
         return (
           <div className="space-y-4 pb-20">

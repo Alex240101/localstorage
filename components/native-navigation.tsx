@@ -1,6 +1,6 @@
 "use client"
 import { Button } from "@/components/ui/button"
-import { Home, TrendingUp, MessageSquare, User, ChevronLeft, ChevronRight } from "lucide-react"
+import { Home, TrendingUp, MessageSquare, User, Heart, ChevronLeft, ChevronRight } from "lucide-react"
 import { useState, useEffect } from "react"
 
 interface NativeNavigationProps {
@@ -23,6 +23,7 @@ export function NativeNavigation({ currentSection, onSectionChange }: NativeNavi
   const navItems = [
     { id: "home", label: "Inicio", icon: Home },
     { id: "trending", label: "Tendencias", icon: TrendingUp },
+    { id: "favorites", label: "Favoritos", icon: Heart },
     { id: "feedback", label: "Mejoras", icon: MessageSquare },
     { id: "profile", label: "Perfil", icon: User },
   ]
