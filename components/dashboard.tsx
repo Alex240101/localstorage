@@ -20,6 +20,7 @@ import { FeedbackSection } from "./feedback-section"
 import { FavoritesPage } from "./favorites-page"
 import { useToast } from "@/hooks/use-toast"
 import { businessSearchService } from "@/lib/api-services"
+import { dataStorage } from "@/lib/data/storage"
 
 interface DashboardProps {
   onLogout: () => void
@@ -41,10 +42,35 @@ export function Dashboard({ onLogout }: DashboardProps) {
   const [currentSection, setCurrentSection] = useState("home")
   const { toast } = useToast()
   const [isMounted, setIsMounted] = useState(false)
+  const [userStats, setUserStats] = useState({ searches: 0, favorites: 0, reviews: 0 })
 
   useEffect(() => {
     setIsMounted(true)
     window.scrollTo({ top: 0, behavior: "smooth" })
+
+    const updateUserStats = () => {
+      const favorites = dataStorage.getUserFavorites()
+      const analytics = dataStorage.getAnalytics()
+
+      setUserStats({
+        searches: analytics.searchPerformed || 0,
+        favorites: favorites.length,
+        reviews: analytics.reviewSubmitted || 0,
+      })
+    }
+
+    updateUserStats()
+
+    // Update stats when localStorage changes
+    const handleStorageChange = () => {
+      updateUserStats()
+    }
+
+    window.addEventListener("storage", handleStorageChange)
+
+    return () => {
+      window.removeEventListener("storage", handleStorageChange)
+    }
   }, [currentSection])
 
   useEffect(() => {
@@ -251,6 +277,8 @@ export function Dashboard({ onLogout }: DashboardProps) {
     setShowSuggestions(false)
     setCurrentSection("search")
 
+    await dataStorage.addSearch(query)
+
     const locationData = JSON.parse(localStorage.getItem("busca-local-location") || "{}")
 
     console.log("[v0] ===== DEBUGGING BÚSQUEDA =====")
@@ -360,11 +388,28 @@ export function Dashboard({ onLogout }: DashboardProps) {
       }
     } catch (error) {
       console.error("[v0] Error en búsqueda:", error)
-      toast({
-        title: "Error de búsqueda",
-        description: "Pruebe con otra palabra",
-        variant: "destructive",
-      })
+
+      const errorMessage = error instanceof Error ? error.message : "Error desconocido"
+
+      if (errorMessage.includes("ZERO_RESULTS") || errorMessage.includes("No se encontraron")) {
+        toast({
+          title: "Sin resultados",
+          description: "No encontramos lugares que coincidan con tu búsqueda. Intenta con otros términos.",
+          variant: "destructive",
+        })
+      } else if (errorMessage.includes("conexión") || errorMessage.includes("network")) {
+        toast({
+          title: "Error de conexión",
+          description: "Verifica tu conexión a internet e intenta nuevamente.",
+          variant: "destructive",
+        })
+      } else {
+        toast({
+          title: "Error en la búsqueda",
+          description: "Ocurrió un problema inesperado. Intenta con otros términos.",
+          variant: "destructive",
+        })
+      }
 
       // Fallback to mock data on error
       const mockResults = getMockResults(query, appliedFilters, locationData.coordinates)
@@ -524,17 +569,21 @@ export function Dashboard({ onLogout }: DashboardProps) {
               <div className="text-center space-y-3 sm:space-y-4">
                 <div className="relative inline-block">
                   <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full overflow-hidden bg-muted mx-auto">
-                    <img
-                      src={
-                        userData.gender === "masculino"
-                          ? "/male-avatar-professional.png"
-                          : userData.gender === "femenino"
-                            ? "/female-avatar-professional.png"
-                            : "/neutral-avatar.png"
-                      }
-                      alt="Avatar"
-                      className="w-full h-full object-cover"
-                    />
+                    {userData.gender === "otro" ? (
+                      <div className="w-full h-full bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center text-white text-2xl font-bold">
+                        {userData.username?.charAt(0)?.toUpperCase() || "U"}
+                      </div>
+                    ) : (
+                      <img
+                        src={
+                          userData.gender === "masculino"
+                            ? "/male-avatar-professional.png"
+                            : "/female-avatar-professional.png"
+                        }
+                        alt="Avatar"
+                        className="w-full h-full object-cover"
+                      />
+                    )}
                   </div>
                 </div>
 
@@ -560,7 +609,7 @@ export function Dashboard({ onLogout }: DashboardProps) {
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-xs sm:text-sm font-medium text-muted-foreground">Teléfono</p>
-                    <p className="text-sm sm:text-base text-foreground">No configurado</p>
+                    <p className="text-sm sm:text-base text-foreground">{userData.phone || "No configurado"}</p>
                   </div>
                 </div>
 
@@ -578,15 +627,15 @@ export function Dashboard({ onLogout }: DashboardProps) {
 
               <div className="grid grid-cols-3 gap-3 sm:gap-4 pt-2">
                 <div className="text-center p-3 bg-muted/30 rounded-lg">
-                  <div className="text-lg sm:text-xl md:text-2xl font-bold text-primary">0</div>
+                  <div className="text-lg sm:text-xl md:text-2xl font-bold text-primary">{userStats.searches}</div>
                   <div className="text-xs sm:text-sm text-muted-foreground">Búsquedas</div>
                 </div>
                 <div className="text-center p-3 bg-muted/30 rounded-lg">
-                  <div className="text-lg sm:text-xl md:text-2xl font-bold text-primary">0</div>
+                  <div className="text-lg sm:text-xl md:text-2xl font-bold text-primary">{userStats.favorites}</div>
                   <div className="text-xs sm:text-sm text-muted-foreground">Favoritos</div>
                 </div>
                 <div className="text-center p-3 bg-muted/30 rounded-lg">
-                  <div className="text-lg sm:text-xl md:text-2xl font-bold text-primary">0</div>
+                  <div className="text-lg sm:text-xl md:text-2xl font-bold text-primary">{userStats.reviews}</div>
                   <div className="text-xs sm:text-sm text-muted-foreground">Reseñas</div>
                 </div>
               </div>

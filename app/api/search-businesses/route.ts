@@ -91,23 +91,39 @@ export async function POST(request: NextRequest) {
           console.log("[v0] Google Places API returned", results.length, "results")
         } else {
           console.log("[v0] Google Places API error:", data.status, data.error_message)
+
+          const getErrorMessage = (status: string) => {
+            switch (status) {
+              case "ZERO_RESULTS":
+                return "No se encontraron lugares cerca de tu ubicación"
+              case "INVALID_REQUEST":
+                return "Error en la búsqueda. Intenta con otros términos"
+              case "OVER_QUERY_LIMIT":
+                return "Servicio temporalmente no disponible. Intenta más tarde"
+              case "REQUEST_DENIED":
+                return "Servicio no disponible en este momento"
+              case "UNKNOWN_ERROR":
+                return "Error temporal. Intenta nuevamente"
+              default:
+                return "No se encontraron resultados. Intenta con otra búsqueda"
+            }
+          }
+
           return NextResponse.json(
             {
-              error: `Google Places API Error: ${data.status}`,
-              details:
-                data.error_message ||
-                `Status: ${data.status}. Verifica que Places API esté habilitada y que tengas facturación configurada.`,
+              error: getErrorMessage(data.status),
+              details: "Prueba con diferentes palabras clave o ajusta los filtros de búsqueda",
               success: false,
             },
-            { status: 400 },
+            { status: 404 },
           )
         }
       } catch (error) {
         console.error("[v0] Google Places API error:", error)
         return NextResponse.json(
           {
-            error: "Error de conexión con Google Places API",
-            details: error instanceof Error ? error.message : "Error desconocido",
+            error: "Error de conexión",
+            details: "Verifica tu conexión a internet e intenta nuevamente",
             success: false,
           },
           { status: 500 },
@@ -164,8 +180,8 @@ export async function POST(request: NextRequest) {
     if (results.length === 0) {
       return NextResponse.json(
         {
-          error: "No se encontraron resultados",
-          details: "No hay APIs configuradas o no se encontraron negocios en la ubicación especificada",
+          error: "No se encontraron lugares",
+          details: "Intenta con otros términos de búsqueda o amplía el área de búsqueda",
           success: false,
         },
         { status: 404 },
@@ -178,7 +194,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       {
         error: "Error en la búsqueda",
-        details: error instanceof Error ? error.message : "Error desconocido",
+        details: "Ocurrió un problema inesperado. Intenta nuevamente",
         success: false,
       },
       { status: 500 },

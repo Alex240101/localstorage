@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { User, Users } from "lucide-react"
+import { dataStorage } from "@/lib/data/storage"
 
 interface LoginPageProps {
   onLogin: (userData: any) => void
@@ -23,18 +24,26 @@ export function LoginPage({ onLogin }: LoginPageProps) {
     e.preventDefault()
     setIsLoading(true)
 
-    // Simulate API call
-    setTimeout(() => {
+    try {
+      const userData = await dataStorage.createUser({
+        name: username,
+        gender,
+      })
+      console.log("[v0] User created successfully:", userData)
+      onLogin(userData)
+    } catch (error) {
+      console.error("[v0] Error creating user:", error)
       const userData = {
-        id: Date.now(),
+        id: Date.now().toString(),
         username,
         gender,
         name: username,
-        createdAt: new Date().toISOString(),
+        createdAt: new Date(),
       }
       onLogin(userData)
+    } finally {
       setIsLoading(false)
-    }, 1000)
+    }
   }
 
   return (

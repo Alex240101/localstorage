@@ -4,6 +4,7 @@ import { useState, useEffect } from "react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Clock, TrendingUp, MapPin } from "lucide-react"
+import { dataStorage } from "@/lib/data/storage"
 
 interface SearchSuggestionsProps {
   query: string
@@ -13,19 +14,52 @@ interface SearchSuggestionsProps {
 
 export function SearchSuggestions({ query, onSuggestionClick, userLocation }: SearchSuggestionsProps) {
   const [suggestions, setSuggestions] = useState<any[]>([])
+  const [popularSearches, setPopularSearches] = useState<any[]>([])
 
-  const popularSearches = [
-    { text: "Pollería cerca", type: "popular", icon: TrendingUp },
-    { text: "Chifa delivery", type: "popular", icon: TrendingUp },
-    { text: "Restaurante abierto", type: "popular", icon: Clock },
-    { text: "Pizza para llevar", type: "popular", icon: TrendingUp },
-  ]
+  useEffect(() => {
+    const loadPopularSearches = async () => {
+      try {
+        const popular = await dataStorage.getPopularSearches(6)
+        const formattedPopular = popular.map((search) => ({
+          text: search,
+          type: "popular",
+          icon: TrendingUp,
+        }))
+        setPopularSearches(formattedPopular)
+      } catch (error) {
+        console.log("[v0] Error loading popular searches:", error)
+        // Fallback to default suggestions
+        setPopularSearches([
+          { text: "Pollería cerca", type: "popular", icon: TrendingUp },
+          { text: "Chifa delivery", type: "popular", icon: TrendingUp },
+          { text: "Restaurante abierto", type: "popular", icon: Clock },
+          { text: "Pizza para llevar", type: "popular", icon: TrendingUp },
+        ])
+      }
+    }
 
-  const recentSearches = [
-    { text: "Pollería El Dorado", type: "recent", icon: Clock },
-    { text: "Chifa Dragón", type: "recent", icon: Clock },
-    { text: "Restaurante criollo", type: "recent", icon: Clock },
-  ]
+    loadPopularSearches()
+  }, [])
+
+  const getRecentSearches = () => {
+    try {
+      const searches = localStorage.getItem("busca-local-searches")
+      if (searches) {
+        const parsedSearches = JSON.parse(searches)
+        return parsedSearches
+          .slice(-5) // Get last 5 searches
+          .reverse() // Most recent first
+          .map((search: any) => ({
+            text: search.query,
+            type: "recent",
+            icon: Clock,
+          }))
+      }
+    } catch (error) {
+      console.log("[v0] Error loading recent searches:", error)
+    }
+    return []
+  }
 
   const locationBasedSuggestions = [
     { text: `Restaurantes en ${userLocation?.district}`, type: "location", icon: MapPin },
@@ -34,6 +68,8 @@ export function SearchSuggestions({ query, onSuggestionClick, userLocation }: Se
   ]
 
   useEffect(() => {
+    const recentSearches = getRecentSearches()
+
     if (query.length > 0) {
       // Filter suggestions based on query
       const filtered = [
@@ -44,9 +80,13 @@ export function SearchSuggestions({ query, onSuggestionClick, userLocation }: Se
       setSuggestions(filtered.slice(0, 6))
     } else {
       // Show default suggestions
-      setSuggestions([...popularSearches.slice(0, 3), ...recentSearches.slice(0, 2)])
+      setSuggestions([
+        ...popularSearches.slice(0, 3),
+        ...recentSearches.slice(0, 2),
+        ...locationBasedSuggestions.slice(0, 1),
+      ])
     }
-  }, [query, userLocation])
+  }, [query, userLocation, popularSearches])
 
   if (suggestions.length === 0) return null
 

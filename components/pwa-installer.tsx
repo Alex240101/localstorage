@@ -23,7 +23,7 @@ export default function PWAInstaller() {
 
       if ("serviceWorker" in navigator) {
         navigator.serviceWorker
-          .register("/api/sw.js")
+          .register("/sw.js")
           .then((registration) => {
             console.log("[PWA] Service Worker registered:", registration)
 
@@ -39,7 +39,15 @@ export default function PWAInstaller() {
             })
           })
           .catch((error) => {
-            console.error("[PWA] Service Worker registration failed:", error)
+            console.log("[PWA] Service Worker registration failed, trying fallback:", error)
+            navigator.serviceWorker
+              .register("/api/sw.js")
+              .then((registration) => {
+                console.log("[PWA] Service Worker registered via API route:", registration)
+              })
+              .catch((fallbackError) => {
+                console.error("[PWA] Both service worker registrations failed:", fallbackError)
+              })
           })
       }
 
