@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { MapPin, Star, Phone, Navigation, AlertCircle, Loader2 } from "lucide-react"
+import { MapPin, Star, Navigation, AlertCircle, Loader2 } from "lucide-react"
 
 interface InteractiveMapProps {
   businesses: any[]
@@ -345,20 +345,11 @@ export function InteractiveMap({ businesses, onBusinessClick, onCall, onNavigate
                 <div className="flex space-x-2 pt-2">
                   <Button
                     size="sm"
-                    variant="outline"
-                    className="flex-1 bg-transparent border-gray-600 text-gray-300 hover:bg-gray-700"
-                    onClick={() => onCall(selectedBusiness.phone)}
-                  >
-                    <Phone className="w-3 h-3 mr-1" />
-                    Llamar
-                  </Button>
-                  <Button
-                    size="sm"
-                    className="flex-1 bg-purple-600 hover:bg-purple-700 text-white"
+                    className="w-full bg-purple-600 hover:bg-purple-700 text-white"
                     onClick={() => onNavigate(selectedBusiness.address)}
                   >
                     <Navigation className="w-3 h-3 mr-1" />
-                    Ir
+                    Cómo llegar
                   </Button>
                 </div>
               </div>
@@ -366,6 +357,23 @@ export function InteractiveMap({ businesses, onBusinessClick, onCall, onNavigate
           </CardContent>
         </Card>
       )}
+
+      {businesses.map((business, index) => (
+        <div key={index} className="flex space-x-2 pt-2">
+          <Button
+            size="sm"
+            className="w-full bg-purple-600 hover:bg-purple-700 text-white"
+            onClick={(e) => {
+              e.stopPropagation()
+              onNavigate(business.address)
+              console.log("[v0] Navigating to:", business.address)
+            }}
+          >
+            <Navigation className="w-3 h-3 mr-1" />
+            Cómo llegar
+          </Button>
+        </div>
+      ))}
     </div>
   )
 }

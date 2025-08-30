@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from "react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { MapPin, Star, Phone, Navigation, AlertCircle, Settings } from "lucide-react"
+import { MapPin, Star, Navigation, AlertCircle, Settings } from "lucide-react"
 
 interface BusinessMapProps {
   businesses: any[]
@@ -208,20 +208,11 @@ export function BusinessMap({ businesses, onBusinessClick, onCall, onNavigate }:
                   <div className="flex space-x-2 pt-2">
                     <Button
                       size="sm"
-                      variant="outline"
-                      className="flex-1 bg-transparent border-gray-600 text-gray-300 hover:bg-gray-700"
-                      onClick={() => onCall(selectedBusiness.phone)}
-                    >
-                      <Phone className="w-3 h-3 mr-1" />
-                      Llamar
-                    </Button>
-                    <Button
-                      size="sm"
-                      className="flex-1 bg-purple-600 hover:bg-purple-700 text-white"
+                      className="w-full bg-purple-600 hover:bg-purple-700 text-white"
                       onClick={() => onNavigate(selectedBusiness.address)}
                     >
                       <Navigation className="w-3 h-3 mr-1" />
-                      Ir
+                      Cómo llegar
                     </Button>
                   </div>
                 </div>
@@ -318,20 +309,7 @@ export function BusinessMap({ businesses, onBusinessClick, onCall, onNavigate }:
                     <div className="flex space-x-2 pt-2">
                       <Button
                         size="sm"
-                        variant="outline"
-                        className="flex-1 bg-transparent border-gray-600 text-gray-300 hover:bg-gray-700 hover:text-white hover:border-gray-500"
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          onCall(business.phone)
-                          console.log("[v0] Calling:", business.phone)
-                        }}
-                      >
-                        <Phone className="w-3 h-3 mr-1" />
-                        Llamar
-                      </Button>
-                      <Button
-                        size="sm"
-                        className="flex-1 bg-purple-600 hover:bg-purple-700 text-white"
+                        className="w-full bg-purple-600 hover:bg-purple-700 text-white"
                         onClick={(e) => {
                           e.stopPropagation()
                           onNavigate(business.address)
@@ -339,7 +317,7 @@ export function BusinessMap({ businesses, onBusinessClick, onCall, onNavigate }:
                         }}
                       >
                         <Navigation className="w-3 h-3 mr-1" />
-                        Ir
+                        Cómo llegar
                       </Button>
                     </div>
                   </div>

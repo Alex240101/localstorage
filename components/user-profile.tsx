@@ -154,15 +154,14 @@ export function UserProfile({ onBack }: UserProfileProps) {
         {/* Profile Info */}
         <Card>
           <CardHeader className="text-center pb-2 px-3 pt-3">
-            {getGenderAvatar(userData.gender) && (
+            {getGenderAvatar(userData.gender) ? (
               <Avatar className="w-16 h-16 mx-auto mb-2">
                 <AvatarImage src={getGenderAvatar(userData.gender) || "/placeholder.svg"} />
                 <AvatarFallback className="text-base bg-primary text-primary-foreground">
                   {getInitials(userData.username || userData.name || "Usuario")}
                 </AvatarFallback>
               </Avatar>
-            )}
-            {!getGenderAvatar(userData.gender) && (
+            ) : (
               <div className="w-16 h-16 mx-auto mb-2 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-xl font-bold">
                 {getInitials(userData.username || userData.name || "Usuario")}
               </div>
@@ -253,24 +252,6 @@ export function UserProfile({ onBack }: UserProfileProps) {
             )}
           </CardContent>
         </Card>
-
-        {/* Statistics */}
-        <div className="grid grid-cols-2 gap-2.5">
-          <Card>
-            <CardContent className="p-2.5 text-center">
-              <Heart className="w-4 h-4 mx-auto mb-1 text-red-500" />
-              <div className="text-lg font-bold">{favorites.length}</div>
-              <div className="text-xs text-muted-foreground">Favoritos</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-2.5 text-center">
-              <Clock className="w-4 h-4 mx-auto mb-1 text-blue-500" />
-              <div className="text-lg font-bold">{searchHistory.length}</div>
-              <div className="text-xs text-muted-foreground">Búsquedas</div>
-            </CardContent>
-          </Card>
-        </div>
 
         {/* Favorites */}
         <Card>

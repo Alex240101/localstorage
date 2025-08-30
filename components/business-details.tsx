@@ -10,7 +10,6 @@ import { Textarea } from "@/components/ui/textarea"
 import {
   ArrowLeft,
   Star,
-  Phone,
   Clock,
   MapPin,
   Heart,
@@ -26,11 +25,12 @@ import { useToast } from "@/hooks/use-toast"
 interface BusinessDetailsProps {
   business: any
   onBack: () => void
-  onCall: (phone: string) => void
-  onNavigate: (address: string) => void
+  onCall?: (phone: string) => void
+  onNavigate?: (address: string) => void
+  isStandalone?: boolean
 }
 
-export function BusinessDetails({ business, onBack, onCall, onNavigate }: BusinessDetailsProps) {
+export function BusinessDetails({ business, onBack, onCall, onNavigate, isStandalone = false }: BusinessDetailsProps) {
   const [isFavorite, setIsFavorite] = useState(false)
   const [selectedImageIndex, setSelectedImageIndex] = useState(0)
   const [newReview, setNewReview] = useState("")
@@ -129,17 +129,21 @@ export function BusinessDetails({ business, onBack, onCall, onNavigate }: Busine
   const handleShare = () => {
     if (typeof window === "undefined" || typeof navigator === "undefined") return
 
+    const shareUrl = isStandalone
+      ? window.location.href
+      : `${window.location.origin}/business/${business.id}?name=${encodeURIComponent(business.name)}&category=${encodeURIComponent(business.category)}&rating=${business.rating}&reviewCount=${business.reviewCount}&distance=${encodeURIComponent(business.distance)}&address=${encodeURIComponent(business.address)}&description=${encodeURIComponent(detailedBusiness.description)}&image=${encodeURIComponent(business.image || "/apple-touch-icon-180x180.png")}`
+
     if (navigator.share) {
       navigator.share({
-        title: business.name,
+        title: `${business.name} - BuscaLocal`,
         text: `Mira este ${business.category.toLowerCase()}: ${business.name}`,
-        url: window.location.href,
+        url: shareUrl,
       })
     } else {
-      navigator.clipboard.writeText(`${business.name} - ${business.address}`)
+      navigator.clipboard.writeText(shareUrl)
       toast({
         title: "Enlace copiado",
-        description: "La información del negocio se copió al portapapeles",
+        description: "El enlace del negocio se copió al portapapeles",
       })
     }
   }
@@ -190,6 +194,23 @@ export function BusinessDetails({ business, onBack, onCall, onNavigate }: Busine
       sunday: "Domingo",
     }
     return days[day] || day
+  }
+
+  const handleCall = (phone: string) => {
+    if (onCall) {
+      onCall(phone)
+    } else if (phone) {
+      window.location.href = `tel:${phone}`
+    }
+  }
+
+  const handleNavigate = (address: string) => {
+    if (onNavigate) {
+      onNavigate(address)
+    } else {
+      const encodedAddress = encodeURIComponent(address)
+      window.open(`https://www.google.com/maps/search/?api=1&query=${encodedAddress}`, "_blank")
+    }
   }
 
   return (
@@ -264,11 +285,10 @@ export function BusinessDetails({ business, onBack, onCall, onNavigate }: Busine
 
           {/* Quick Actions */}
           <div className="flex space-x-2">
-            <Button className="flex-1" onClick={() => onCall(business.phone)}>
-              <Phone className="w-4 h-4 mr-2" />
-              Llamar
-            </Button>
-            <Button variant="outline" className="flex-1 bg-transparent" onClick={() => onNavigate(business.address)}>
+            <Button
+              className="w-full bg-primary hover:bg-primary/90 text-white"
+              onClick={() => handleNavigate(business.address)}
+            >
               <Navigation className="w-4 h-4 mr-2" />
               Cómo llegar
             </Button>
@@ -314,7 +334,7 @@ export function BusinessDetails({ business, onBack, onCall, onNavigate }: Busine
                 <Button
                   variant="outline"
                   className="w-full bg-transparent"
-                  onClick={() => onNavigate(business.address)}
+                  onClick={() => handleNavigate(business.address)}
                 >
                   <ExternalLink className="w-4 h-4 mr-2" />
                   Ver en Google Maps
