@@ -38,15 +38,15 @@ export const metadata: Metadata = {
     siteName: "BuscaLocal",
     images: [
       {
-        url: "/og-image.png",
-        width: 1200,
-        height: 630,
+        url: "/apple-touch-icon.png",
+        width: 180,
+        height: 180,
         alt: "BuscaLocal - Encuentra Negocios Cerca de Ti",
       },
       {
-        url: "/og-image-square.png",
-        width: 1200,
-        height: 1200,
+        url: "/apple-touch-icon-152x152.png",
+        width: 152,
+        height: 152,
         alt: "BuscaLocal App",
       },
     ],
@@ -57,7 +57,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "BuscaLocal - Encuentra Negocios Cerca de Ti",
     description: "Descubre los mejores restaurantes, pollerías, chifas y negocios cerca de tu ubicación en Lima, Perú.",
-    images: ["/twitter-image.png"],
+    images: ["/apple-touch-icon.png"],
     creator: "@BuscaLocal",
   },
   robots: {
