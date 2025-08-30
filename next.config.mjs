@@ -14,7 +14,7 @@ const nextConfig = {
     minimumCacheTTL: 60 * 60 * 24 * 365, // 1 año
   },
   experimental: {
-    optimizeCss: true,
+    // optimizeCss: true,
     optimizePackageImports: ['lucide-react'],
   },
   async headers() {
