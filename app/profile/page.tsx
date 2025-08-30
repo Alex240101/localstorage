@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { ArrowLeft, User, MapPin, Calendar, Edit3, Save, X, Heart, Clock, Star } from "lucide-react"
+import { ArrowLeft, User, MapPin, Calendar, Edit3, Save, X, Heart, Clock, Star, Trash2 } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { useToast } from "@/hooks/use-toast"
 import { NativeNavigation } from "@/components/native-navigation"
@@ -17,6 +17,7 @@ export default function ProfilePage() {
   const { toast } = useToast()
   const [isEditing, setIsEditing] = useState(false)
   const [currentSection, setCurrentSection] = useState("profile")
+  const [favorites, setFavorites] = useState<any[]>([])
   const [userProfile, setUserProfile] = useState({
     name: "",
     gender: "",
@@ -29,24 +30,44 @@ export default function ProfilePage() {
   })
 
   useEffect(() => {
-    // Cargar datos del perfil desde localStorage
-    const savedProfile = localStorage.getItem("busca-local-user")
-    const savedLocation = localStorage.getItem("busca-local-location")
+    if (typeof window !== "undefined") {
+      const savedProfile = localStorage.getItem("busca-local-user")
+      const savedLocation = localStorage.getItem("busca-local-location")
+      const savedFavorites = JSON.parse(localStorage.getItem("busca-local-favorites") || "[]")
 
-    if (savedProfile) {
-      const profile = JSON.parse(savedProfile)
-      setUserProfile({
-        name: profile.username || "Usuario",
-        gender: profile.gender || "masculino",
-        joinDate: profile.joinDate || "2025",
-        phone: profile.phone || "",
-        bio: profile.bio || "",
-        location: savedLocation ? JSON.parse(savedLocation).address : "Ubicación GPS detectada",
-        favoriteCount: profile.favoriteCount || 0,
-        searchCount: profile.searchCount || 0,
-      })
+      setFavorites(savedFavorites)
+
+      if (savedProfile) {
+        const profile = JSON.parse(savedProfile)
+        setUserProfile({
+          name: profile.username || "Usuario",
+          gender: profile.gender || "masculino",
+          joinDate: profile.joinDate || "2025",
+          phone: profile.phone || "",
+          bio: profile.bio || "",
+          location: savedLocation ? JSON.parse(savedLocation).address : "Ubicación GPS detectada",
+          favoriteCount: savedFavorites.length, // Use real favorites count
+          searchCount: profile.searchCount || 0,
+        })
+      }
     }
   }, [])
+
+  const handleRemoveFavorite = (businessId: string) => {
+    if (typeof window === "undefined") return
+
+    const updatedFavorites = favorites.filter((fav) => fav.id !== businessId)
+    setFavorites(updatedFavorites)
+    localStorage.setItem("busca-local-favorites", JSON.stringify(updatedFavorites))
+
+    // Update profile favorite count
+    setUserProfile((prev) => ({ ...prev, favoriteCount: updatedFavorites.length }))
+
+    toast({
+      title: "Favorito eliminado",
+      description: "El negocio ha sido removido de tus favoritos",
+    })
+  }
 
   const handleSave = () => {
     const savedProfile = JSON.parse(localStorage.getItem("busca-local-user") || "{}")
@@ -244,6 +265,61 @@ export default function ProfilePage() {
                 </div>
               </div>
             </div>
+          </CardContent>
+        </Card>
+
+        {/* Favorites Section */}
+        <Card className="bg-card border-border">
+          <CardContent className="p-4 space-y-4">
+            <h3 className="font-semibold text-foreground flex items-center">
+              <Heart className="w-4 h-4 mr-2 text-red-500" />
+              Mis Favoritos ({favorites.length})
+            </h3>
+            {favorites.length > 0 ? (
+              <div className="space-y-3">
+                {favorites.map((business) => (
+                  <div key={business.id} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+                    <div className="flex items-center space-x-3 flex-1 min-w-0">
+                      <div className="w-12 h-12 rounded-lg overflow-hidden flex-shrink-0">
+                        <img
+                          src={business.image || "/placeholder.svg"}
+                          alt={business.name}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h4 className="font-medium text-sm truncate">{business.name}</h4>
+                        <div className="flex items-center space-x-2 text-xs text-muted-foreground">
+                          <div className="flex items-center space-x-1">
+                            <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
+                            <span>{business.rating}</span>
+                          </div>
+                          <span>•</span>
+                          <span>{business.distance}</span>
+                        </div>
+                        <Badge variant="outline" className="mt-1 text-xs">
+                          {business.category}
+                        </Badge>
+                      </div>
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleRemoveFavorite(business.id)}
+                      className="text-red-500 hover:text-red-600 p-2 h-8 w-8"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-6 text-muted-foreground">
+                <Heart className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                <p className="text-sm">No tienes favoritos aún</p>
+                <p className="text-xs opacity-75">Marca negocios como favoritos para verlos aquí</p>
+              </div>
+            )}
           </CardContent>
         </Card>
 

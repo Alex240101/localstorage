@@ -8,6 +8,7 @@ interface ShareButtonProps {
   text?: string
   url?: string
   businessName?: string
+  className?: string
 }
 
 export default function ShareButton({
@@ -15,6 +16,7 @@ export default function ShareButton({
   text = "Descubre los mejores restaurantes y negocios cerca de tu ubicación",
   url,
   businessName,
+  className = "flex items-center gap-2 px-3 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors text-sm",
 }: ShareButtonProps) {
   const [copied, setCopied] = useState(false)
 
@@ -60,18 +62,18 @@ export default function ShareButton({
   return (
     <button
       onClick={handleShare}
-      className="flex items-center gap-2 px-3 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors text-sm"
+      className={className}
       title={businessName ? `Compartir ${businessName}` : "Compartir BuscaLocal"}
     >
       {copied ? (
         <>
           <Check className="w-4 h-4" />
-          <span>Copiado</span>
+          {className.includes("gap-2") && <span>Copiado</span>}
         </>
       ) : (
         <>
           <Share2 className="w-4 h-4" />
-          <span>Compartir</span>
+          {className.includes("gap-2") && <span>Compartir</span>}
         </>
       )}
     </button>

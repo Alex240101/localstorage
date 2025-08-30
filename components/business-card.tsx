@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -18,12 +18,51 @@ export function BusinessCard({ business, onCall, onNavigate }: BusinessCardProps
   const [isFavorite, setIsFavorite] = useState(false)
   const { toast } = useToast()
 
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const favorites = JSON.parse(localStorage.getItem("busca-local-favorites") || "[]")
+      const isBusinessFavorite = favorites.some((fav: any) => fav.id === business.id)
+      setIsFavorite(isBusinessFavorite)
+    }
+  }, [business.id])
+
   const handleFavorite = () => {
-    setIsFavorite(!isFavorite)
-    toast({
-      title: isFavorite ? "Eliminado de favoritos" : "Agregado a favoritos",
-      description: `${business.name} ${isFavorite ? "eliminado de" : "agregado a"} tus favoritos`,
-    })
+    if (typeof window === "undefined") return
+
+    const favorites = JSON.parse(localStorage.getItem("busca-local-favorites") || "[]")
+
+    if (isFavorite) {
+      const updatedFavorites = favorites.filter((fav: any) => fav.id !== business.id)
+      localStorage.setItem("busca-local-favorites", JSON.stringify(updatedFavorites))
+      setIsFavorite(false)
+      toast({
+        title: "Eliminado de favoritos",
+        description: `${business.name} eliminado de tus favoritos`,
+      })
+    } else {
+      const favoriteData = {
+        id: business.id,
+        name: business.name,
+        category: business.category,
+        rating: business.rating,
+        distance: business.distance,
+        address: business.address,
+        image: business.image,
+        priceLevel: business.priceLevel,
+        reviewCount: business.reviewCount,
+        hours: business.hours,
+        isOpen: business.isOpen,
+        specialties: business.specialties,
+        addedAt: new Date().toISOString(),
+      }
+      const updatedFavorites = [...favorites, favoriteData]
+      localStorage.setItem("busca-local-favorites", JSON.stringify(updatedFavorites))
+      setIsFavorite(true)
+      toast({
+        title: "Agregado a favoritos",
+        description: `${business.name} agregado a tus favoritos`,
+      })
+    }
   }
 
   const getPriceLevel = (level: string) => {
@@ -51,20 +90,23 @@ export function BusinessCard({ business, onCall, onNavigate }: BusinessCardProps
           />
         </div>
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
-        <div className="absolute top-3 right-3 flex space-x-2">
+        <div className="absolute top-2 right-2 flex flex-col space-y-2">
           <Button
             size="sm"
             variant="secondary"
-            className="h-9 w-9 p-0 bg-black/50 backdrop-blur-sm border-white/20 hover:bg-purple-600 hover:border-purple-400 transition-all duration-300"
+            className="h-8 w-8 p-0 bg-white/90 backdrop-blur-sm border-0 hover:bg-white hover:scale-110 transition-all duration-300 shadow-lg"
             onClick={handleFavorite}
           >
-            <Heart className={`w-4 h-4 ${isFavorite ? "fill-red-500 text-red-500" : "text-white"}`} />
+            <Heart
+              className={`w-4 h-4 transition-colors duration-300 ${isFavorite ? "fill-red-500 text-red-500" : "text-gray-600 hover:text-red-500"}`}
+            />
           </Button>
-          <div className="h-9 w-9">
+          <div className="h-8 w-8">
             <ShareButton
               businessName={business.name}
               title={`${business.name} - ${business.category}`}
               text={`Encontré ${business.name} en BuscaLocal. ${business.address}`}
+              className="h-8 w-8 p-0 bg-white/90 backdrop-blur-sm border-0 hover:bg-white hover:scale-110 transition-all duration-300 shadow-lg text-gray-600 hover:text-purple-600"
             />
           </div>
         </div>
