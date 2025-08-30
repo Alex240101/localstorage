@@ -22,6 +22,13 @@ export function UserProfile({ onBack }: UserProfileProps) {
   const [searchHistory, setSearchHistory] = useState<any[]>([])
   const { toast } = useToast()
 
+  const refreshFavorites = () => {
+    if (typeof window !== "undefined") {
+      const favs = JSON.parse(localStorage.getItem("busca-local-favorites") || "[]")
+      setFavorites(favs)
+    }
+  }
+
   useEffect(() => {
     // Load user data
     const user = JSON.parse(localStorage.getItem("busca-local-user") || "{}")
@@ -33,6 +40,29 @@ export function UserProfile({ onBack }: UserProfileProps) {
     setLocationData(location)
     setFavorites(favs)
     setSearchHistory(history.slice(0, 10)) // Last 10 searches
+
+    refreshFavorites()
+
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === "busca-local-favorites") {
+        refreshFavorites()
+      }
+    }
+
+    window.addEventListener("storage", handleStorageChange)
+
+    const handleVisibilityChange = () => {
+      if (!document.hidden) {
+        refreshFavorites()
+      }
+    }
+
+    document.addEventListener("visibilitychange", handleVisibilityChange)
+
+    return () => {
+      window.removeEventListener("storage", handleStorageChange)
+      document.removeEventListener("visibilitychange", handleVisibilityChange)
+    }
   }, [])
 
   const handleSaveProfile = () => {
@@ -69,7 +99,7 @@ export function UserProfile({ onBack }: UserProfileProps) {
     } else if (gender === "femenino") {
       return "/female-avatar-professional.png"
     }
-    return "/neutral-avatar.png"
+    return null
   }
 
   const getInitials = (name: string) => {
@@ -124,12 +154,19 @@ export function UserProfile({ onBack }: UserProfileProps) {
         {/* Profile Info */}
         <Card>
           <CardHeader className="text-center pb-2 px-3 pt-3">
-            <Avatar className="w-16 h-16 mx-auto mb-2">
-              <AvatarImage src={getGenderAvatar(userData.gender) || "/placeholder.svg"} />
-              <AvatarFallback className="text-base bg-primary text-primary-foreground">
+            {getGenderAvatar(userData.gender) && (
+              <Avatar className="w-16 h-16 mx-auto mb-2">
+                <AvatarImage src={getGenderAvatar(userData.gender) || "/placeholder.svg"} />
+                <AvatarFallback className="text-base bg-primary text-primary-foreground">
+                  {getInitials(userData.username || userData.name || "Usuario")}
+                </AvatarFallback>
+              </Avatar>
+            )}
+            {!getGenderAvatar(userData.gender) && (
+              <div className="w-16 h-16 mx-auto mb-2 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-xl font-bold">
                 {getInitials(userData.username || userData.name || "Usuario")}
-              </AvatarFallback>
-            </Avatar>
+              </div>
+            )}
             <CardTitle className="text-lg leading-tight">{userData.username || userData.name || "Usuario"}</CardTitle>
             <CardDescription className="space-y-1">
               {userData.gender && (
