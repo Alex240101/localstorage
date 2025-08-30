@@ -93,6 +93,9 @@ export default function ProfilePage() {
     if (userProfile.gender === "femenino") {
       return "/female-avatar-professional.png"
     }
+    if (userProfile.gender === "otro") {
+      return "/neutral-avatar.png"
+    }
     return "/male-avatar-professional.png"
   }
 
@@ -153,10 +156,14 @@ export default function ProfilePage() {
                 </div>
                 <Badge
                   className={`absolute -bottom-1 -right-1 text-xs px-2 py-1 ${
-                    userProfile.gender === "femenino" ? "bg-pink-500 text-white" : "bg-blue-500 text-white"
+                    userProfile.gender === "femenino"
+                      ? "bg-pink-500 text-white"
+                      : userProfile.gender === "otro"
+                        ? "bg-gray-500 text-white"
+                        : "bg-blue-500 text-white"
                   }`}
                 >
-                  {userProfile.gender === "femenino" ? "♀" : "♂"}
+                  {userProfile.gender === "femenino" ? "♀" : userProfile.gender === "otro" ? "•" : "♂"}
                 </Badge>
               </div>
 
@@ -206,7 +213,11 @@ export default function ProfilePage() {
                   <>
                     <h2 className="text-xl font-bold text-foreground">{userProfile.name}</h2>
                     <Badge variant="outline" className="border-primary/30 text-primary">
-                      {userProfile.gender === "femenino" ? "Femenino" : "Masculino"}
+                      {userProfile.gender === "femenino"
+                        ? "Femenino"
+                        : userProfile.gender === "otro"
+                          ? "Otro"
+                          : "Masculino"}
                     </Badge>
                     <div className="flex items-center justify-center text-sm text-muted-foreground">
                       <Calendar className="w-4 h-4 mr-1" />

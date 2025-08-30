@@ -38,15 +38,15 @@ export const metadata: Metadata = {
     siteName: "BuscaLocal",
     images: [
       {
-        url: "/apple-touch-icon.png",
-        width: 180,
-        height: 180,
+        url: "/icon-512x512.png",
+        width: 512,
+        height: 512,
         alt: "BuscaLocal - Encuentra Negocios Cerca de Ti",
       },
       {
-        url: "/apple-touch-icon-152x152.png",
-        width: 152,
-        height: 152,
+        url: "/icon-192x192.png",
+        width: 192,
+        height: 192,
         alt: "BuscaLocal App",
       },
     ],
@@ -57,7 +57,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "BuscaLocal - Encuentra Negocios Cerca de Ti",
     description: "Descubre los mejores restaurantes, pollerías, chifas y negocios cerca de tu ubicación en Lima, Perú.",
-    images: ["/apple-touch-icon.png"],
+    images: ["/icon-512x512.png"],
     creator: "@BuscaLocal",
   },
   robots: {
@@ -81,8 +81,8 @@ export const metadata: Metadata = {
     ],
     shortcut: "/favicon.ico",
     apple: [
-      { url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
-      { url: "/apple-touch-icon-152x152.png", sizes: "152x152", type: "image/png" },
+      { url: "/icon-512x512.png", sizes: "512x512", type: "image/png" },
+      { url: "/icon-192x192.png", sizes: "192x192", type: "image/png" },
       { url: "/apple-touch-icon-144x144.png", sizes: "144x144", type: "image/png" },
       { url: "/apple-touch-icon-120x120.png", sizes: "120x120", type: "image/png" },
     ],
@@ -98,7 +98,7 @@ export const metadata: Metadata = {
   other: {
     "mobile-web-app-capable": "yes",
     "apple-mobile-web-app-capable": "yes",
-    "apple-mobile-web-app-status-bar-style": "black-translucent",
+    "apple-mobile-web-app-status-bar-style": "default",
     "apple-mobile-web-app-title": "BuscaLocal",
     "application-name": "BuscaLocal",
     "msapplication-TileColor": "#1f2937",

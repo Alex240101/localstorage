@@ -134,7 +134,11 @@ export function UserProfile({ onBack }: UserProfileProps) {
             <CardDescription className="space-y-1">
               {userData.gender && (
                 <Badge variant="outline" className="mb-1.5 text-xs px-2 py-0.5">
-                  {userData.gender === "masculino" ? "👨 Masculino" : "👩 Femenino"}
+                  {userData.gender === "masculino"
+                    ? "👨 Masculino"
+                    : userData.gender === "femenino"
+                      ? "👩 Femenino"
+                      : "🧑 Otro"}
                 </Badge>
               )}
               <div className="text-xs text-muted-foreground">Miembro desde {new Date().getFullYear()}</div>
