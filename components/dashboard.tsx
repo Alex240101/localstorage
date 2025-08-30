@@ -554,6 +554,8 @@ export function Dashboard({ onLogout }: DashboardProps) {
   const locationData =
     isMounted && typeof window !== "undefined" ? JSON.parse(localStorage.getItem("busca-local-location") || "{}") : {}
 
+  const displayName = userData.name || userData.username || "Usuario"
+
   const renderCurrentSection = () => {
     switch (currentSection) {
       case "trending":
@@ -571,7 +573,7 @@ export function Dashboard({ onLogout }: DashboardProps) {
                   <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full overflow-hidden bg-muted mx-auto">
                     {userData.gender === "otro" ? (
                       <div className="w-full h-full bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center text-white text-2xl font-bold">
-                        {userData.username?.charAt(0)?.toUpperCase() || "U"}
+                        {displayName.charAt(0)?.toUpperCase() || "U"}
                       </div>
                     ) : (
                       <img
@@ -588,7 +590,7 @@ export function Dashboard({ onLogout }: DashboardProps) {
                 </div>
 
                 <div className="space-y-1 sm:space-y-2">
-                  <h2 className="text-xl sm:text-2xl font-bold text-foreground">{userData.username}</h2>
+                  <h2 className="text-xl sm:text-2xl font-bold text-foreground">{displayName}</h2>
                   <div className="flex items-center justify-center space-x-2">
                     <span className="text-xs sm:text-sm px-2 py-1 bg-primary/10 text-primary rounded-full font-medium">
                       {userData.gender === "masculino"
@@ -649,7 +651,7 @@ export function Dashboard({ onLogout }: DashboardProps) {
           <div className="space-y-4 sm:space-y-6 pb-20">
             <div className="text-center space-y-2 py-2 sm:py-4">
               <h2 className="text-xl sm:text-2xl md:text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-                ¡Hola, {userData.username}!
+                ¡Hola, {displayName}!
               </h2>
               <p className="text-muted-foreground text-base sm:text-lg">¿Qué te gustaría comer hoy?</p>
             </div>

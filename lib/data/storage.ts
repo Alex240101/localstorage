@@ -43,6 +43,94 @@ export interface Favorite {
 class DataStorage {
   private currentUserId: string | null = null
 
+  async forceFirestoreInit(): Promise<void> {
+    if (!isFirestoreAvailable || !db) {
+      console.log("[v0] Firestore not available - using localStorage only")
+      return
+    }
+
+    try {
+      console.log("[v0] Force initializing Firestore with sample data...")
+
+      // Create sample users
+      const sampleUsers = [
+        { name: "Usuario Demo 1", gender: "masculino", phone: "+51 999 111 222" },
+        { name: "Usuario Demo 2", gender: "femenino", phone: "+51 999 333 444" },
+        { name: "Usuario Demo 3", gender: "otro", phone: "+51 999 555 666" },
+      ]
+
+      for (const userData of sampleUsers) {
+        await addDoc(collection(db, "users"), {
+          ...userData,
+          createdAt: serverTimestamp(),
+        })
+      }
+
+      // Create sample searches
+      const sampleSearches = [
+        "pollería",
+        "chifa",
+        "cevichería",
+        "broaster",
+        "pizza",
+        "restaurante",
+        "café",
+        "restobar",
+        "comida criolla",
+        "parrillas",
+      ]
+
+      for (const searchQuery of sampleSearches) {
+        await addDoc(collection(db, "searches"), {
+          userId: "demo-user",
+          query: searchQuery,
+          timestamp: serverTimestamp(),
+        })
+      }
+
+      // Create sample favorites
+      const sampleFavorites = [
+        {
+          userId: "demo-user",
+          businessId: "demo-business-1",
+          businessName: "Pollería El Dorado",
+          businessAddress: "Av. Principal 123, Ate",
+          businessImage: "/polleria-restaurant.png",
+        },
+        {
+          userId: "demo-user",
+          businessId: "demo-business-2",
+          businessName: "Chifa Dragón Dorado",
+          businessAddress: "Jr. Los Olivos 456, Ate",
+          businessImage: "/chifa-chinese-restaurant.png",
+        },
+      ]
+
+      for (const favorite of sampleFavorites) {
+        await addDoc(collection(db, "favorites"), {
+          ...favorite,
+          timestamp: serverTimestamp(),
+        })
+      }
+
+      // Create analytics document
+      await setDoc(doc(db, "analytics", "global"), {
+        totalUsers: sampleUsers.length,
+        totalSearches: sampleSearches.length,
+        totalFavorites: sampleFavorites.length,
+        lastUpdated: serverTimestamp(),
+      })
+
+      console.log("[v0] ✅ Firestore initialized successfully with collections:")
+      console.log("[v0] - users: 3 sample users")
+      console.log("[v0] - searches: 10 sample searches")
+      console.log("[v0] - favorites: 2 sample favorites")
+      console.log("[v0] - analytics: global stats")
+    } catch (error) {
+      console.log("[v0] ❌ Error force initializing Firestore:", error)
+    }
+  }
+
   async initializeFirestore(): Promise<void> {
     if (!isFirestoreAvailable || !db) return
 
@@ -51,81 +139,12 @@ class DataStorage {
       const usersSnapshot = await getDocs(query(collection(db, "users"), limit(1)))
 
       if (usersSnapshot.empty) {
-        console.log("[v0] Initializing Firestore with sample data...")
-
-        // Create sample users
-        const sampleUsers = [
-          { name: "Usuario Demo 1", gender: "masculino", phone: "+51 999 111 222" },
-          { name: "Usuario Demo 2", gender: "femenino", phone: "+51 999 333 444" },
-          { name: "Usuario Demo 3", gender: "otro", phone: "+51 999 555 666" },
-        ]
-
-        for (const userData of sampleUsers) {
-          await addDoc(collection(db, "users"), {
-            ...userData,
-            createdAt: serverTimestamp(),
-          })
-        }
-
-        // Create sample searches
-        const sampleSearches = [
-          "pollería",
-          "chifa",
-          "cevichería",
-          "broaster",
-          "pizza",
-          "restaurante",
-          "café",
-          "restobar",
-          "comida criolla",
-          "parrillas",
-        ]
-
-        for (const searchQuery of sampleSearches) {
-          await addDoc(collection(db, "searches"), {
-            userId: "demo-user",
-            query: searchQuery,
-            timestamp: serverTimestamp(),
-          })
-        }
-
-        // Create sample favorites
-        const sampleFavorites = [
-          {
-            userId: "demo-user",
-            businessId: "demo-business-1",
-            businessName: "Pollería El Dorado",
-            businessAddress: "Av. Principal 123, Ate",
-            businessImage: "/polleria-restaurant.png",
-          },
-          {
-            userId: "demo-user",
-            businessId: "demo-business-2",
-            businessName: "Chifa Dragón Dorado",
-            businessAddress: "Jr. Los Olivos 456, Ate",
-            businessImage: "/chifa-chinese-restaurant.png",
-          },
-        ]
-
-        for (const favorite of sampleFavorites) {
-          await addDoc(collection(db, "favorites"), {
-            ...favorite,
-            timestamp: serverTimestamp(),
-          })
-        }
-
-        // Create analytics document
-        await setDoc(doc(db, "analytics", "global"), {
-          totalUsers: sampleUsers.length,
-          totalSearches: sampleSearches.length,
-          totalFavorites: sampleFavorites.length,
-          lastUpdated: serverTimestamp(),
-        })
-
-        console.log("[v0] Firestore initialized with sample data successfully!")
+        await this.forceFirestoreInit()
       }
     } catch (error) {
-      console.log("[v0] Error initializing Firestore:", error)
+      console.log("[v0] Error checking Firestore collections:", error)
+      // Force init even if check fails
+      await this.forceFirestoreInit()
     }
   }
 
@@ -139,24 +158,39 @@ class DataStorage {
 
     if (isFirestoreAvailable && db) {
       try {
-        await this.initializeFirestore()
+        console.log("[v0] Creating user in Firestore...")
+        await this.forceFirestoreInit() // Force init to ensure collections exist
 
         const docRef = await addDoc(collection(db, "users"), {
-          ...user,
+          name: user.name,
+          gender: user.gender,
+          phone: user.phone,
           createdAt: serverTimestamp(),
         })
         user.id = docRef.id
-        console.log("[v0] User created in Firestore with ID:", user.id)
+        console.log("[v0] ✅ User created in Firestore with ID:", user.id)
+
+        // Update analytics in Firestore
+        await setDoc(
+          doc(db, "analytics", "global"),
+          {
+            totalUsers: (await getDocs(collection(db, "users"))).size,
+            lastUpdated: serverTimestamp(),
+          },
+          { merge: true },
+        )
       } catch (error) {
-        console.log("[v0] Firestore error, using localStorage:", error)
+        console.log("[v0] ❌ Firestore user creation error:", error)
       }
+    } else {
+      console.log("[v0] Firestore not available - user saved to localStorage only")
     }
 
     // Always save to localStorage as backup
     localStorage.setItem("busca-local-user", JSON.stringify(user))
     this.currentUserId = user.id
 
-    // Update analytics
+    // Update local analytics
     this.updateAnalytics("userRegistered")
 
     return user
@@ -176,6 +210,7 @@ class DataStorage {
     if (isFirestoreAvailable && db) {
       try {
         await deleteDoc(doc(db, "users", userId))
+        console.log("[v0] User deleted from Firestore:", userId)
       } catch (error) {
         console.log("[v0] Firestore delete error:", error)
       }
@@ -199,12 +234,13 @@ class DataStorage {
     if (isFirestoreAvailable && db) {
       try {
         await addDoc(collection(db, "searches"), {
-          ...searchRecord,
+          userId: searchRecord.userId,
+          query: searchRecord.query,
           timestamp: serverTimestamp(),
         })
-        console.log("[v0] Search saved to Firestore:", query)
+        console.log("[v0] ✅ Search saved to Firestore:", query)
       } catch (error) {
-        console.log("[v0] Firestore search error:", error)
+        console.log("[v0] ❌ Firestore search error:", error)
       }
     }
 
@@ -274,12 +310,16 @@ class DataStorage {
     if (isFirestoreAvailable && db) {
       try {
         await addDoc(collection(db, "favorites"), {
-          ...favorite,
+          userId: favorite.userId,
+          businessId: favorite.businessId,
+          businessName: favorite.businessName,
+          businessImage: favorite.businessImage,
+          businessAddress: favorite.businessAddress,
           timestamp: serverTimestamp(),
         })
-        console.log("[v0] Favorite saved to Firestore:", business.name)
+        console.log("[v0] ✅ Favorite saved to Firestore:", business.name)
       } catch (error) {
-        console.log("[v0] Firestore favorite error:", error)
+        console.log("[v0] ❌ Firestore favorite error:", error)
       }
     }
 
@@ -330,9 +370,9 @@ class DataStorage {
     analytics.lastUpdated = new Date().toISOString()
     localStorage.setItem("busca-local-analytics", JSON.stringify(analytics))
 
-    console.log(`[v0] Analytics: ${action} - Total: ${analytics[action]}`)
+    console.log(`[v0] 📊 Analytics: ${action} - Total: ${analytics[action]}`)
 
-    if (analytics[action] % 5 === 0) {
+    if (analytics[action] % 2 === 0) {
       this.getTotalStats()
     }
   }
@@ -356,14 +396,16 @@ class DataStorage {
         stats.searches = searchesSnapshot.size
         stats.favorites = favoritesSnapshot.size
 
-        console.log("[v0] === ESTADÍSTICAS TOTALES DEL SISTEMA ===")
+        console.log("[v0] === 📊 ESTADÍSTICAS TOTALES DEL SISTEMA ===")
         console.log(`[v0] 👥 Usuarios registrados: ${stats.users}`)
         console.log(`[v0] 🔍 Búsquedas realizadas: ${stats.searches}`)
         console.log(`[v0] ❤️ Favoritos guardados: ${stats.favorites}`)
         console.log("[v0] ==========================================")
       } catch (error) {
-        console.log("[v0] Error getting Firestore stats:", error)
+        console.log("[v0] ❌ Error getting Firestore stats:", error)
       }
+    } else {
+      console.log("[v0] 📊 Firestore not available - showing localStorage stats only")
     }
 
     return stats
