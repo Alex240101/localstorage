@@ -22,7 +22,7 @@ export const metadata: Metadata = {
     address: false,
     telephone: false,
   },
-  metadataBase: new URL("https://buscalocal.app"),
+  metadataBase: new URL("https://localstorage-75z6.vercel.app"),
   alternates: {
     canonical: "/",
     languages: {
@@ -34,7 +34,7 @@ export const metadata: Metadata = {
     title: "BuscaLocal - Encuentra Negocios Cerca de Ti",
     description:
       "Descubre los mejores restaurantes, pollerías, chifas y negocios cerca de tu ubicación en Lima, Perú. Búsqueda en tiempo real con GPS.",
-    url: "https://buscalocal.app",
+    url: "https://localstorage-75z6.vercel.app",
     siteName: "BuscaLocal",
     images: [
       {
@@ -130,7 +130,7 @@ export default function RootLayout({
               name: "BuscaLocal",
               description:
                 "Encuentra restaurantes, pollerías, chifas y más negocios cerca de tu ubicación en Lima, Perú",
-              url: "https://buscalocal.app",
+              url: "https://localstorage-75z6.vercel.app",
               applicationCategory: "BusinessApplication",
               operatingSystem: "All",
               offers: {
@@ -148,8 +148,8 @@ export default function RootLayout({
                 ratingCount: "1250",
               },
               applicationSubCategory: "Local Business Search",
-              downloadUrl: "https://buscalocal.app",
-              screenshot: "https://buscalocal.app/screenshot.png",
+              downloadUrl: "https://localstorage-75z6.vercel.app",
+              screenshot: "https://localstorage-75z6.vercel.app/screenshot.png",
               softwareVersion: "1.0.0",
               datePublished: "2025-01-01",
               inLanguage: "es-PE",

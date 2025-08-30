@@ -1,5 +1,7 @@
 "use client"
 
+import type React from "react"
+
 import { useState, useEffect } from "react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -26,7 +28,9 @@ export function BusinessCard({ business, onCall, onNavigate }: BusinessCardProps
     }
   }, [business.id])
 
-  const handleFavorite = () => {
+  const handleFavorite = (event: React.MouseEvent) => {
+    event.stopPropagation()
+
     if (typeof window === "undefined") return
 
     const favorites = JSON.parse(localStorage.getItem("busca-local-favorites") || "[]")
@@ -90,23 +94,23 @@ export function BusinessCard({ business, onCall, onNavigate }: BusinessCardProps
           />
         </div>
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
-        <div className="absolute top-2 right-2 flex flex-col space-y-2">
+        <div className="absolute top-3 right-3 flex flex-col space-y-2">
           <Button
             size="sm"
             variant="secondary"
-            className="h-8 w-8 p-0 bg-white/90 backdrop-blur-sm border-0 hover:bg-white hover:scale-110 transition-all duration-300 shadow-lg"
+            className="h-10 w-10 p-0 bg-white/95 backdrop-blur-md border-0 hover:bg-white hover:scale-105 transition-all duration-200 shadow-lg rounded-full"
             onClick={handleFavorite}
           >
             <Heart
-              className={`w-4 h-4 transition-colors duration-300 ${isFavorite ? "fill-red-500 text-red-500" : "text-gray-600 hover:text-red-500"}`}
+              className={`w-5 h-5 transition-all duration-200 ${isFavorite ? "fill-red-500 text-red-500 scale-110" : "text-gray-600 hover:text-red-500 hover:scale-110"}`}
             />
           </Button>
-          <div className="h-8 w-8">
+          <div className="h-10 w-10">
             <ShareButton
               businessName={business.name}
               title={`${business.name} - ${business.category}`}
               text={`Encontré ${business.name} en BuscaLocal. ${business.address}`}
-              className="h-8 w-8 p-0 bg-white/90 backdrop-blur-sm border-0 hover:bg-white hover:scale-110 transition-all duration-300 shadow-lg text-gray-600 hover:text-purple-600"
+              className="h-10 w-10 p-0 bg-white/95 backdrop-blur-md border-0 hover:bg-white hover:scale-105 transition-all duration-200 shadow-lg text-gray-600 hover:text-purple-600 rounded-full flex items-center justify-center"
             />
           </div>
         </div>

@@ -1,5 +1,7 @@
 "use client"
 
+import type React from "react"
+
 import { useState } from "react"
 import { Share2, Check } from "lucide-react"
 
@@ -20,7 +22,9 @@ export default function ShareButton({
 }: ShareButtonProps) {
   const [copied, setCopied] = useState(false)
 
-  const handleShare = async () => {
+  const handleShare = async (event: React.MouseEvent) => {
+    event.stopPropagation()
+
     const currentUrl = url || (typeof window !== "undefined" ? window.location.href : "")
 
     const shareData = {

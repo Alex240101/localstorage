@@ -23,7 +23,7 @@ export default function PWAInstaller() {
 
       if ("serviceWorker" in navigator) {
         navigator.serviceWorker
-          .register("/sw")
+          .register("/sw.js") // Changed service worker registration from "/sw" to "/sw.js" to use the static file
           .then((registration) => {
             console.log("[PWA] Service Worker registered:", registration)
 
